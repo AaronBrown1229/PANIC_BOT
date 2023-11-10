@@ -1,6 +1,6 @@
 // will have a lot of 0 in it as the nodes can only connect with the 4 adg nodes
 // might be able to save on memory somehow.
-public class board_bot {
+public class board_bot implements Cloneable {
 	private boolean board[][];
 	// number of nodes per row
 	private int numb_nodes;
@@ -127,6 +127,36 @@ public class board_bot {
 		return !this.board[i][j];
 	}
 	
+	// stole from https://www.geeksforgeeks.org/clone-method-in-java-2/
+	public Object clone() throws CloneNotSupportedException 
+    { 
+        return super.clone(); 
+    } 
+
+	public board_bot[] possmoves() throws CloneNotSupportedException {
+		board_bot moves[];
+		moves = new board_bot[2 * (this.numb_nodes * this.numb_nodes) - 2 * this.numb_nodes];
+		int numb_moves = 0;
+		for (int i = 1; i < this.numb_nodes * (this.numb_nodes - 1); i++) {
+			// looks to the right
+			if (i+1 % (this.numb_nodes) != 0 && !this.board[i][i+1]) {
+				board_bot new_board = (board_bot)this.clone();
+				new_board.addLine(i, i + 1);
+				moves[numb_moves] = new_board;
+				//moves[numb_moves][0] = i;
+				//moves[numb_moves][1] = i + 1;
+				//numb_moves++;
+			}
+			// looks down
+			if (!this.board[i][i+this.numb_nodes]) {
+				board_bot new_board = (board_bot)this.clone();
+				new_board.addLine(i, i + 1);
+				moves[numb_moves] = new_board;
+			}
+		}
+		return moves;
+	}
+	
 	public static void main(String[] args) throws Exception {
 		// for testing
 		board_bot board = new board_bot(4);
@@ -170,5 +200,8 @@ public class board_bot {
 		turn_again = board.checkScore(24, 23, board_bot.bot);
 		System.out.print(turn_again);
 		System.out.print(board.print());
+		
+		board_bot moves[] = board.possmoves();
+		System.out.print(moves[1].print());
 	}
 }
