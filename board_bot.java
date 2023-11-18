@@ -19,6 +19,14 @@ public class board_bot implements Cloneable {
 		this.enemy_score = 0;
 	}
 	
+	/*
+	 * returns true if all boxes have been created and false otherwise
+	 */
+	public boolean is_game_over() {
+		// checks if the total score is equal to the total number of boxes.
+		return this.bot_score + this.enemy_score == (this.numb_nodes - 1) * (this.numb_nodes - 1);
+	}
+	
 	//stole from https://www.programiz.com/dsa/graph-adjacency-matrix
 	// must be a valid line given
 	public void addLine(int i, int j) {
@@ -135,33 +143,45 @@ public class board_bot implements Cloneable {
 		board_bot new_board = new board_bot(this.numb_nodes - 1);
 		new_board.bot_score = this.bot_score;
 		new_board.enemy_score = this.enemy_score;
-		for(int i = 0; i < numb_nodes * numb_nodes - 1; i++) {
-			for(int j = 0; j< numb_nodes * numb_nodes - 1; j++) {
+		for(int i = 0; i < numb_nodes * numb_nodes; i++) {
+			for(int j = 0; j< numb_nodes * numb_nodes; j++) {
 				new_board.board[j][i] = this.board[j][i];
 			}
 		}
 		return new_board;
     } 
 
-	public board_bot[] possmoves() throws CloneNotSupportedException {
+	/*
+	 * Will return an array with copies of the current board each with one additional move added
+	 */
+	public board_bot[] possmoves() {
+		// makes an array to hold boards which have the next move added to them
 		board_bot moves[];
 		moves = new board_bot[2 * (this.numb_nodes * this.numb_nodes) - 2 * this.numb_nodes];
+
+		// used to reference the moves array
 		int numb_moves = 0;
-		for (int i = 1; i < this.numb_nodes * (this.numb_nodes - 1); i++) {
+
+		// looks at every node
+		for (int i = 0; i < this.numb_nodes * this.numb_nodes - 1; i++) {
 			// looks to the right
-			if (i+1 % (this.numb_nodes) != 0 && !this.board[i][i+1]) {
+			// prevents looking at far right column
+			if ((i+1) % (this.numb_nodes) != 0 && !this.board[i][i+1]) {
+				//make new board 
 				board_bot new_board = this.clone();
 				new_board.addLine(i, i + 1);
 				moves[numb_moves] = new_board;
-				//moves[numb_moves][0] = i;
-				//moves[numb_moves][1] = i + 1;
-				//numb_moves++;
+				numb_moves++;
 			}
+
 			// looks down
-			if (!this.board[i][i+this.numb_nodes]) {
+			// prevents looking with the last row
+			if (i < this.numb_nodes * (this.numb_nodes - 1) && !this.board[i][i+this.numb_nodes]) {
+				// makes new board ad adds the move
 				board_bot new_board = (board_bot)this.clone();
-				new_board.addLine(i, i + 1);
+				new_board.addLine(i, i + this.numb_nodes);
 				moves[numb_moves] = new_board;
+				numb_moves++;
 			}
 		}
 		return moves;
@@ -214,7 +234,7 @@ public class board_bot implements Cloneable {
 		System.out.print("-------------------------------------------------\n");
 		
 		board_bot[] moves = board.possmoves();
-		System.out.print(moves[0].print());
-		System.out.print(moves[1].print());
+		//System.out.print(moves[0].print());
+		//System.out.print(moves[1].print());
 	}
 }
