@@ -1,8 +1,6 @@
 // will have a lot of 0 in it as the nodes can only connect with the 4 adg nodes
 // might be able to save on memory somehow.
 
-import java.util.Arrays;
-
 public class board_bot implements Cloneable {
 	private boolean board[][];
 	// number of nodes per row
@@ -238,7 +236,7 @@ public class board_bot implements Cloneable {
 		System.out.print("-------------------------------------------------\n");
 		
 		board_bot[] moves = board.possmoves();
-		//System.out.print(moves[0].print());
-		//System.out.print(moves[1].print());
+		System.out.print(moves[0].print());
+		System.out.print(moves[1].print());
 	}
 }
