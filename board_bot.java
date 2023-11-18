@@ -27,6 +27,10 @@ public class board_bot implements Cloneable {
 		return this.bot_score + this.enemy_score == (this.numb_nodes - 1) * (this.numb_nodes - 1);
 	}
 	
+	public int bot_score() {
+		return bot_score;
+	}
+	
 	//stole from https://www.programiz.com/dsa/graph-adjacency-matrix
 	// must be a valid line given
 	public void addLine(int i, int j) {

@@ -2,7 +2,7 @@ public class minimaxclass implements Runnable{
 	
 	// This is higher than bestVal can ever be so is adequate for posInfinity
 	static int posInfinity = 17;
-	int[] bestVals = null;
+	public int[] bestVals = null;
 	private board_bot start_board;
 	private int start_depth;
 	private int index;
@@ -123,7 +123,7 @@ public class minimaxclass implements Runnable{
 	}	
 	
 	private int heuristic(board_bot board) {
-		return 10;
+		return board.bot_score();
 	}
 	
 }
