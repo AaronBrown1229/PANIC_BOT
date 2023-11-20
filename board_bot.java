@@ -8,8 +8,9 @@ public class board_bot implements Cloneable {
 	private int bot_score;
 	private int enemy_score;
 	public static final int bot = 1, enemy = 2;
+	public static final int hor = 0, vert = 1;
 	
-	public board_bot(int numb_boxes) {
+ 	public board_bot(int numb_boxes) {
 		// might be more better to say square **2
 		this.numb_nodes = numb_boxes + 1;
 		board = new boolean[this.numb_nodes * this.numb_nodes][this.numb_nodes * this.numb_nodes];
@@ -34,6 +35,10 @@ public class board_bot implements Cloneable {
 	public void addLine(int i, int j) {
 		board[i][j] = true;
 		board[j][i] = true;
+	}
+	
+	public void addOppMove(int, HorV, int row, int col) {
+		
 	}
 	
 	// returns false if not turn again true if turn again
