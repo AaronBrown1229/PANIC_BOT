@@ -6,8 +6,8 @@ public class PANIC_BOT {
 	final static int myTable = 17;
 	final static int myPW = 1751;
 	final static int size = 4; //Play on a 4 boxes per 4 boxes
-	final static int opp = -4;
-	final static int depth = 10;
+	final static int opp = -2;
+	final static int depth = 3;
 	
 	public static void main(String[] args) throws Exception {
 		GameSocket gs = new GameSocket();
@@ -29,9 +29,7 @@ public class PANIC_BOT {
 				case GameSocket.PLEASE_PLAY:
 					minimaxclass minimax = new minimaxclass(board, depth, -1);
 					board = minimax.next_minimax(board, depth);
-					int[] mov = new int[3];
-					mov = board.convert_to_move(board);
-					gs.sendMove(mov[0],mov[1],mov[2]);
+					gs.sendMove(board.move[0], board.move[1], board.move[2]);
 			
 				case GameSocket.YOUR_RESULT:
 						if (msg[1] == GameSocket.INVALID_MOVE) {
@@ -48,7 +46,7 @@ public class PANIC_BOT {
 						System.out.println("We either lost or tied but if you are not first you are last :(");
 					}
 				//default:
-					// run as opp turn
+					// TODO run as opp turn
 			}
 			// reads the next message
 			msg = gs.readMessage();

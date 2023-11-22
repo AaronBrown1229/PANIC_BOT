@@ -88,10 +88,10 @@ public class minimaxclass implements Runnable{
 		board_bot[] moves = board.possmoves();
 		int counter = 0;
 		// TODO Not sure if this is cool or not
-		Thread[] threads = null;
+		Thread[] threads = new Thread[2 * (board.numb_nodes * board.numb_nodes) - 2 * board.numb_nodes];
 		
 		// runs minimax for all subsequent moves of this tree in a new thread
-		while(moves[counter] != null) {
+		while(counter < moves.length && moves[counter] != null) {
 			//make thread for each possible board state
 			minimaxclass mini = new minimaxclass(moves[counter], depth, counter);
 			threads[counter] = new Thread(mini);

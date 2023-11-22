@@ -4,9 +4,10 @@
 public class board_bot implements Cloneable {
 	private boolean board[][];
 	// number of nodes per row
-	private int numb_nodes;
+	public int numb_nodes;
 	private int bot_score;
 	private int enemy_score;
+	public int[] move = new int[3];
 	public static final int bot = 1, enemy = 2;
 	public static final int hor = 0, vert = 1;
 	
@@ -33,12 +34,37 @@ public class board_bot implements Cloneable {
 	//stole from https://www.programiz.com/dsa/graph-adjacency-matrix
 	// must be a valid line given
 	public void addLine(int i, int j) {
+		// add move to our board
 		board[i][j] = true;
 		board[j][i] = true;
+
+		// convert move to server format
+		if (i > j) {
+			int temp = i;
+			i = j;
+			j = temp;
+		}
+		if (i + 1 == j) {
+			this.move[0] = 0;
+		}
+		// row
+		this.move[1] = i % this.numb_nodes;
+		// col
+		this.move[2] = i / this.numb_nodes;
 	}
 	
-	public void addOppMove(int, HorV, int row, int col) {
+	public void addOppMove(int HorV, int row, int col) {
+		int nodeone = this.numb_nodes * col + row;
+		int nodetwo;
 		
+		// if it is a horizontal node
+		if (HorV == 0) {
+			nodetwo = nodeone + 1;
+		} else {
+			// it is a vertical line
+			nodetwo = nodeone + this.numb_nodes;
+		}
+		this.addLine(nodeone, nodetwo);
 	}
 	
 	// returns false if not turn again true if turn again
