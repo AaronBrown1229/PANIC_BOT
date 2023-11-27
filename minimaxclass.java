@@ -2,7 +2,7 @@ public class minimaxclass implements Runnable{
 	
 	// This is higher than bestVal can ever be so is adequate for posInfinity
 	static int posInfinity = 17;
-	public int[] bestVals = null;
+	public int[] bestVals = new int[40];
 	private board_bot start_board;
 	private int start_depth;
 	private int index;
@@ -39,6 +39,7 @@ public class minimaxclass implements Runnable{
 				if (beta <= alpha) {
 					break;
 				}
+				counter++;
 			}
 			return bestVal;
 			
@@ -54,6 +55,7 @@ public class minimaxclass implements Runnable{
 				if (beta <= alpha) {
 					break;
 				}
+				counter++;
 			}
 		}
 		return bestVal;
@@ -65,7 +67,7 @@ public class minimaxclass implements Runnable{
 	public void run() {
 		// alpha is set to -1 as that is essentially -infinity
 		// beta is set to posInfinity as that is essentially +infinity
-		int bestVal = this.minimax(this.start_board, this.start_depth, true, -1, posInfinity);
+		int bestVal = this.minimax(this.start_board, this.start_depth, false, -1, posInfinity);
 		this.bestVals[this.index] = bestVal;
 	}
 	
@@ -93,7 +95,7 @@ public class minimaxclass implements Runnable{
 		// runs minimax for all subsequent moves of this tree in a new thread
 		while(counter < moves.length && moves[counter] != null) {
 			//make thread for each possible board state
-			minimaxclass mini = new minimaxclass(moves[counter], depth, counter);
+			minimaxclass mini = new minimaxclass(moves[counter], depth - 1, counter);
 			threads[counter] = new Thread(mini);
 			threads[counter].start();
 			counter++;
@@ -102,7 +104,7 @@ public class minimaxclass implements Runnable{
 		
 		// rejoins all the threads
 		counter = 0;
-		while(moves[counter] != null) {
+		while(counter < moves.length && moves[counter] != null) {
 			try {
 				threads[counter].join();
 			} catch (Exception e) {

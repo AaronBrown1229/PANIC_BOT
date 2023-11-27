@@ -46,15 +46,17 @@ public class board_bot implements Cloneable {
 		}
 		if (i + 1 == j) {
 			this.move[0] = 0;
+		} else {
+			this.move[0] = 1;
 		}
 		// row
-		this.move[1] = i % this.numb_nodes;
+		this.move[1] = i / this.numb_nodes;
 		// col
-		this.move[2] = i / this.numb_nodes;
+		this.move[2] = i % this.numb_nodes;
 	}
 	
 	public void addOppMove(int HorV, int row, int col) {
-		int nodeone = this.numb_nodes * col + row;
+		int nodeone = this.numb_nodes * row + col;
 		int nodetwo;
 		
 		// if it is a horizontal node
@@ -219,7 +221,64 @@ public class board_bot implements Cloneable {
 		}
 		return moves;
 	}
+
+	/*
+	 * Will return an array with all possible moves
+	 */
+	public int[][] possmoves_mcts() {
+		// makes an array to hold all moves
+		int[][] moves;
+		moves = new int[2 * (this.numb_nodes * this.numb_nodes) - 2 * this.numb_nodes][2];
+
+		// used to reference the moves array
+		int numb_moves = 0;
+
+		// looks at every node
+		for (int i = 0; i < this.numb_nodes * this.numb_nodes - 1; i++) {
+			// looks to the right
+			// prevents looking at far right column
+			if ((i+1) % (this.numb_nodes) != 0 && !this.board[i][i+1]) {
+				//make new board 
+				moves[numb_moves][0] = i;
+				moves[numb_moves][1] = i + 1;
+				numb_moves++;
+			}
+
+			// looks down
+			// prevents looking with the last row
+			if (i < this.numb_nodes * (this.numb_nodes - 1) && !this.board[i][i+this.numb_nodes]) {
+				// makes new board ad adds the move
+				moves[numb_moves][0] = i;
+				moves[numb_moves][1] = i + this.numb_nodes;
+				numb_moves++;
+			}
+		}
+		return moves;
+	}
 	
+	/*
+	 * will return if it is a valid move
+	 * checks if the line is already created and if i and j are next to each other
+	 */
+	public boolean is_valid_move(int i, int j){
+		// if there is already a line at location return false
+		if (board[i][j]){
+			return false;
+		}
+
+		// if i and j are not next to each other return false
+		if (i != j - 1 || i != j + 1 || i != j - this.numb_nodes || i != j + this.numb_nodes){
+			return false;
+		}
+		return true;
+	}
+
+	/*
+	 * will return true if we won and false otherwise
+	 */
+	public boolean check_win(){
+		return this.bot_score > this.enemy_score;
+	}
 	public static void main(String[] args) throws Exception {
 		// for testing
 		board_bot board = new board_bot(4);
