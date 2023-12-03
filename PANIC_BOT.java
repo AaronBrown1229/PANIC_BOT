@@ -8,7 +8,7 @@ public class PANIC_BOT {
 	final static int myPW = 1751;
 	final static int size = 4; //Play on a 4 boxes per 4 boxes
 	final static int opp = -2;
-	final static int depth = 5;
+	final static int depth = 8;
 	
 	public static void main(String[] args) throws Exception {
 		GameSocket gs = new GameSocket();

@@ -3,11 +3,11 @@ import java.util.Random;
 public class PANIC_BOT_MCTS{
 	final static String ServerIP1 = "localhost";
 	
-	final static int myAIID = 1700;
+	final static int myAIID = 1600;
 	final static int myTable = 17;
 	final static int myPW = 1751;
 	final static int size = 4; //Play on a 4 boxes per 4 boxes
-	final static int opp = -2;
+	final static int opp = 0;
 	final static int depth = 5;
 	
 	public static void main(String[] args) throws Exception {
@@ -31,50 +31,72 @@ public class PANIC_BOT_MCTS{
 			switch (msg[0]) {
 				case GameSocket.PLEASE_PLAY:
                     start_time = System.currentTimeMillis();
-                    monte_carlo_bot root_node = new monte_carlo_bot(null, null);
+                    monte_carlo_bot root_node = new monte_carlo_bot(null, null, true);
                     // might need to check if whole remaining tree is searched
-                    while (System.currentTimeMillis() - start_time < 6000){
+					// TODO make the time good
+                    while (System.currentTimeMillis() - start_time < 3000){
                         monte_carlo_bot node = root_node;
                         //,https://webdocs.cs.ualberta.ca/~hayward/396/jem/mcts.html
                         // make a copy of board called sim
                         board_bot sim = board.clone();
                         // this gets us to the node which will be simulated
-                        while (! node.is_leaf()){
+                        while (!node.is_leaf()){
                             // make find best which uses UCB on all chlidren
-                            node = findBestUCB(node);
+							if(!node.max){
+                            	node = findBestUCB(node);
+							} else{
+								node = findWorstUCB(node);
+							}
                             // add move of best node to sim
                             sim.addLine(node.move[0], node.move[1]);
                         }
                         node.make_children(sim);
 						                  
 						int winInt = 0;
+						int visits = 0;
                         // do random path on all poss moves of sim
-                        for(int i = 0; node.children[i] != null; i++){
-							// walk random path and return if win or loss
-							boolean win = PANIC_BOT_MCTS.play_random(sim);
-							// updates node and child
-							if (win){
-								winInt = 1;
-							} else {
-								winInt = 0;
+                        for(int i = 0; i < 40 && node.children[i] != null; i++){
+							int max;
+							// changes node max from a boolean to a int
+							if(node.children[i].max){
+								max = 1;
+							} else{
+								max = 2;
 							}
-							node.children[i].update(winInt);
-							node.update(winInt);
+							// makes it do 5 random paths
+							for(int j = 0; j < 10; j++){
+								// walk random path and return if win or loss
+								int win = PANIC_BOT_MCTS.start_play_random(sim, max);
+								// updates node and child
+								node.children[i].update(win);
+								node.update(win);
+								winInt += win;
+								visits++;
+							}
                         }
 
                         // propogate from node up to root
 						node = node.parent;
-                        while (!node.is_root()){
-							node.update(winInt);
+                        while (node != null){
+							node.propogate_update(visits, winInt);
 							node = node.parent;
 						}
+						// updates root
+						// node.propogate_update(visits, winInt);
                     }
 					
 					// find best move to play
+					// TODO could check the top 5 runs and compute their value
+					int num_children = root_node.children.length;
+					int bestIndex = 0;
+					for(int i = 1; i < num_children; i++){
+						if(root_node.children[bestIndex].wins < root_node.children[i].wins){
+							bestIndex = i;
+						}
+					}
 					// update board
+					board.checkScoreAndLine(root_node.children[bestIndex].move[0], root_node.children[bestIndex].move[1], 1);
 					// send move
-					minimaxclass minimax = new minimaxclass(board, depth, -1);
-					board = minimax.next_minimax(board, depth);
 					gs.sendMove(board.move[0], board.move[1], board.move[2]);
 					break;
 			
@@ -105,8 +127,8 @@ public class PANIC_BOT_MCTS{
 	}
 
     public static monte_carlo_bot findBestUCB(monte_carlo_bot node){
-        int bestIndex = 0;
-        for(int i = 1; node.children[i] != null; i++){
+		int bestIndex = 0;
+        for(int i = 0; i < 40 && node.children[i] != null; i++){
             if (node.children[i].UCB() > node.children[bestIndex].UCB()){
                 bestIndex = i;
             }
@@ -114,29 +136,68 @@ public class PANIC_BOT_MCTS{
         return node.children[bestIndex];
     }
 
+	public static monte_carlo_bot findWorstUCB(monte_carlo_bot node){
+		int worstIndex = 0;
+		for(int i = 0; i < 40 && node.children[i] != null; i++){
+			if(node.children[i].UCB() < node.children[worstIndex].UCB()){
+				worstIndex = i;
+			}
+		}
+		return node.children[worstIndex];
+	}
+
 	/*
 	 * will recursivly play random moves on the board until the game is over
 	 * will return if it won or lost
 	 */
-	public static boolean play_random(board_bot board){
-		if (!board.gameOver()){
-			Random rand = new Random();
-			// will get a random i and j location
-			int i = rand.nextInt(41);
-			int j = rand.nextInt(41);
+	public static int play_random(board_bot board, int max, int[][] possmoves, int[] index, int i){
+		if (i < 40 && !board.gameOver()){
+			// adds the next random line from possmoves
+			boolean next_player = board.checkScoreAndLine(possmoves[index[i]][0], possmoves[index[i]][1], max);
 
-			// while we don't have a valid move get a new move
-			while(!board.is_valid_move(i, j)){
-				i = rand.nextInt(41);
-				j = rand.nextInt(41);
+			// update who's turn it is if a box wasn't formed
+			if (!next_player){
+				if (max == 1){
+					max = 2;
+				} else{
+					max = 1;
+				}
 			}
-			
-			// apply move and play next move
-			board.addLine(i, j);
-			return play_random(board);
+
+			// play next move
+			return play_random(board, max, possmoves, index, i + 1);
 		} else{
 			// at game over
-			return board.check_win();
+			if(board.check_win()){
+				return 1;
+			}
+			return 0;
 		}
+	}
+
+	public static int start_play_random(board_bot board, int max){
+		// TODO clone board
+        board_bot randoboard = board.clone();
+		int[][] possmoves = randoboard.possmoves_mcts();
+		int len = possmoves.length;
+
+		// an array that holds what element to of possmoves to play next
+		int[] index = new int[len];
+		// make an array filled with sequential numbers
+		for(int i = 0; i < len; i++){
+			index[i] = i;
+		}
+
+		Random rand = new Random();
+
+		// will shuffle index to be random
+		for(int i = len - 1; i >= 0; i--){
+			int j = rand.nextInt(len);
+			int temp = index[i];
+			index[i] = index[j];
+			index[j] = temp;
+		}
+
+		return play_random(randoboard, max, possmoves, index, 0);
 	}
 }
